@@ -8,10 +8,16 @@
 
 #import "MasterViewController.h"
 #import "DetailViewController.h"
+#import "People.h"
 
 @interface MasterViewController ()
 
 @property NSMutableArray *objects;
+@property (nonatomic, strong) NSString *jsonUrl;
+@property (nonatomic, strong) NSDictionary *jsonDict;
+@property (nonatomic,retain) UIAlertController *alert;
+@property (nonatomic,retain) UIAlertAction *ok;
+
 @end
 
 @implementation MasterViewController
@@ -20,10 +26,13 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     self.navigationItem.leftBarButtonItem = self.editButtonItem;
-
-    UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
-    self.navigationItem.rightBarButtonItem = addButton;
-    self.detailViewController = (DetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
+    
+    self.objects = nil;
+//    People *peopleRec;
+    
+    _jsonUrl = @"https://s3-us-west-2.amazonaws.com/wirestorm/assets/response.json";
+    [self loadDataUsingNSURLSession];
+    
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -34,28 +43,6 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
-}
-
-- (void)insertNewObject:(id)sender {
-    if (!self.objects) {
-        self.objects = [[NSMutableArray alloc] init];
-    }
-    [self.objects insertObject:[NSDate date] atIndex:0];
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-    [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-}
-
-#pragma mark - Segues
-
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([[segue identifier] isEqualToString:@"showDetail"]) {
-        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        NSDate *object = self.objects[indexPath.row];
-        DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
-        [controller setDetailItem:object];
-        controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
-        controller.navigationItem.leftItemsSupplementBackButton = YES;
-    }
 }
 
 #pragma mark - Table View
@@ -69,25 +56,109 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PeopleCell" forIndexPath:indexPath];
 
-    NSDate *object = self.objects[indexPath.row];
-    cell.textLabel.text = [object description];
+    NSDictionary *object = [_objects objectAtIndex:indexPath.row];
+    NSLog(@"name %@", [object valueForKey:@"name"]);
+    cell.textLabel.text = [object valueForKey:@"name"];
+    cell.detailTextLabel.text = [object valueForKey:@"position"];
+    
+    // get small image
+    NSURL * imageURL = [NSURL URLWithString:[object valueForKey:@"smallpic"]];
+    NSData * imageData = [NSData dataWithContentsOfURL:imageURL];
+    UIImage * image = [UIImage imageWithData:imageData];
+    cell.imageView.image = image;
+
+    
     return cell;
 }
 
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
 
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        [self.objects removeObjectAtIndex:indexPath.row];
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
+#pragma mark - Segues
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([[segue identifier] isEqualToString:@"showDetail"]) {
+        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+        NSObject *object = self.objects[indexPath.row];
+        DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
+        [controller setDetailItem:object];
+        controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
+        controller.navigationItem.leftItemsSupplementBackButton = YES;
     }
 }
+
+#pragma mark - json
+
+- (void)loadDataUsingNSURLSession {
+    
+    NSURLSession *session = [NSURLSession sharedSession];
+    
+    NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:self.jsonUrl]
+                                    completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                                        // handle response
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            [self processResponseUsingData:data];
+                                        });
+                                        
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            [self.tableView reloadData];
+                                        });
+                                  }];
+    
+    [task setTaskDescription:@"jsonDownload"];
+    [task resume];
+}
+
+- (void)processResponseUsingData:(NSData*)data
+{
+    
+    
+    if ([data isKindOfClass:[NSData class]] && data.length != 0) {
+        
+        NSError *parseJsonError = nil;
+        _objects = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:&parseJsonError];
+        
+        if (parseJsonError) {
+ 
+            _alert=   [UIAlertController
+                      alertControllerWithTitle:@"Server Error"
+                      message:@"Data returned from server is incorrect. Please try again later."
+                      preferredStyle:UIAlertControllerStyleAlert];
+            
+            _ok = [UIAlertAction
+                  actionWithTitle:@"OK"
+                  style:UIAlertActionStyleDefault
+                  handler:^(UIAlertAction * action)
+                  {
+                      [_alert dismissViewControllerAnimated:YES completion:nil];
+                      
+                  }];
+            [_alert addAction:_ok];
+            [self presentViewController:_alert animated:YES completion:nil];
+        }
+    }else{
+        [self noData];
+    }
+}
+
+-(void)noData{
+    // show error alert
+    _alert=   [UIAlertController
+              alertControllerWithTitle:@"No Data"
+              message:@"No data returned from server for these parameters."
+              preferredStyle:UIAlertControllerStyleAlert];
+    
+    _ok = [UIAlertAction
+          actionWithTitle:@"OK"
+          style:UIAlertActionStyleDefault
+          handler:^(UIAlertAction * action)
+          {
+              [_alert dismissViewControllerAnimated:YES completion:nil];
+              
+          }];
+    [_alert addAction:_ok];
+    [self presentViewController:_alert animated:YES completion:nil];
+}
+
 
 @end

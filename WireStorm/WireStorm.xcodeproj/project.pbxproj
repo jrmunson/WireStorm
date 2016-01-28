@@ -14,6 +14,7 @@
 		38E333D81C59501D007917FD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 38E333D61C59501D007917FD /* Main.storyboard */; };
 		38E333DA1C59501D007917FD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 38E333D91C59501D007917FD /* Assets.xcassets */; };
 		38E333DD1C59501D007917FD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 38E333DB1C59501D007917FD /* LaunchScreen.storyboard */; };
+		38E333E61C597699007917FD /* People.m in Sources */ = {isa = PBXBuildFile; fileRef = 38E333E51C597699007917FD /* People.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,8 @@
 		38E333D91C59501D007917FD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		38E333DC1C59501D007917FD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		38E333DE1C59501D007917FD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		38E333E41C597699007917FD /* People.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = People.h; sourceTree = "<group>"; };
+		38E333E51C597699007917FD /* People.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = People.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +75,8 @@
 				38E333DB1C59501D007917FD /* LaunchScreen.storyboard */,
 				38E333DE1C59501D007917FD /* Info.plist */,
 				38E333CA1C59501D007917FD /* Supporting Files */,
+				38E333E41C597699007917FD /* People.h */,
+				38E333E51C597699007917FD /* People.m */,
 			);
 			path = WireStorm;
 			sourceTree = "<group>";
@@ -156,6 +161,7 @@
 			files = (
 				38E333CF1C59501D007917FD /* AppDelegate.m in Sources */,
 				38E333D21C59501D007917FD /* MasterViewController.m in Sources */,
+				38E333E61C597699007917FD /* People.m in Sources */,
 				38E333CC1C59501D007917FD /* main.m in Sources */,
 				38E333D51C59501D007917FD /* DetailViewController.m in Sources */,
 			);
@@ -219,7 +225,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -257,7 +263,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
